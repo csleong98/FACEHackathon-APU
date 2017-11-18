@@ -2,7 +2,7 @@
 <html>
 
 <head>
-    <title>Line Chart</title>
+    <title>Employee Mood Detection</title>
     <script src="dist/Chart.bundle.js"></script>
     <script src="utils.js"></script>
     <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
@@ -22,18 +22,17 @@
     </div>
     <br>
     <br>
-    <button id="addDataset">Add Dataset</button>
+    <!-- <button id="addDataset">Add Dataset</button>
     <button id="removeDataset">Remove Dataset</button>
     <button id="addData">Add Data</button>
     <button id="removeData">Remove Data</button>
-    <button id="update">Update</button>
+    <button id="update">Update</button> -->
     <script>
         var yLabels = {
-            0: 'newb',
-            1: 'codecademy',
-            2: 'code-school',
-            3: 'bootcamp',
-            4: 'junior-dev',
+            0: 'angry',
+            1: 'depress',
+            2: 'neutral',
+            3: 'happy'
         };
 
         let datasets = [];
@@ -42,27 +41,37 @@
         });
 
         $.getJSON('https://quae.serveo.net/employees', json => {
+            
+        var colorNames = Object.keys(window.chartColors);
+
             for (let i of json) {
+                var colorName = colorNames[datasets.length % colorNames.length];
+                var newColor = window.chartColors[colorName];
                 datasets.push({
                     id: i.id,
                     label: i.name,
-                    backgroundColor: window.chartColors.red,
-                    borderColor: window.chartColors.red,
-                    data: i.data.slice(-5).map(d => d.emotion),
+                    backgroundColor: newColor,
+                    borderColor: newColor,
+                    data: i.data.map(d => d.emotion),
                     fill: false
                 });
             }
         });
 
 
-        var days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+        const hours = ["8.00 a.m.", "9.00 a.m.", "10.00 a.m.", "11.00 a.m.", "12.00 p.m.", "1.00 p.m.", "2.00 p.m.", "3.00 p.m.", "4.00 p.m.", "5.00 p.m."];
         var config = {
             type: 'line',
             data: {
-                labels: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+                labels: [...Array(25).keys()].map(i => hours[i % hours.length]),
                 datasets: datasets
             },
             options: {
+                elements: {
+                    line:{
+                        tension: 0.000001
+                    }
+                },
                 responsive: true,
                 title: {
                     display: true,
@@ -128,8 +137,8 @@
 
         document.getElementById('addData').addEventListener('click', function () {
             if (config.data.datasets.length > 0) {
-                var month = days[config.data.labels.length % days.length];
-                config.data.labels.push(month);
+                var day = days[config.data.labels.length % days.length];
+                config.data.labels.push(day);
 
                 config.data.datasets.forEach(function (dataset) {
                     dataset.data.push(randomScalingFactor());
